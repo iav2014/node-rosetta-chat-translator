@@ -1,0 +1,86 @@
+<html>
+<head>
+<META HTTP-EQUIV="CACHE-CONTROL" CONTENT="NO-CACHE">
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE" />
+<META HTTP-EQUIV="EXPIRES" CONTENT="-1" />
+<title>Rosetta chat basic interface</title>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+if (typeof console == "undefined") var console = { log: function() {} };
+var i=0;
+var socket = io();
+socket.on('subscription confirm', function (data){
+  document.formul.text.value+= '['+data.nick+'] language:['+data.language+']' + ' - status: '+data.data +"\n";
+});
+socket.on('chat message', function (data) {
+  document.formul.text.value+=  data +"\n";
+	document.formul.text.scrollTop = document.formul.text.scrollHeight;
+});
+
+function LogOut(){
+  if(socket!=null){
+    socket.disconnect();
+  }
+}
+function getLanguage(){
+  var value=document.formul.evento.value;
+  return value;
+}
+function getMessage() {
+  var value=document.formul.message.value;
+  return value;
+}
+
+function getNick(){
+  var value=document.formul.nick.value;
+  return value;
+}
+
+function sendEvt(evt) {
+  switch(evt) {
+    case 00:
+        socket.emit('chat message', {nick:getNick(),language:getLanguage(),evt:0,data:''});
+
+
+    break;
+    case 01:
+        if(getNick()===''){
+          document.formul.text.value+=  'local: you must subscription before!'+"\n";
+        } else {
+          document.formul.text.value+=  'local:'+ getMessage() +"\n";
+          document.formul.text.scrollTop = document.formul.text.scrollHeight;
+          socket.emit('chat message', {nick:getNick(),language:getLanguage(),evt:1,data:getMessage()});
+        }
+
+
+    break;
+    default:
+    break;
+  }
+}
+</script>
+</head>
+<body onbeforeunload="LogOut()">
+<form name="formul">
+  Language:  <select id="evento" onchange="getLanguage(this.value)">
+   <option value="de"> Germany</option>
+   <option value="en"> English</option>
+   <option value="es"> Espanish</option>
+   <option value="fr"> France</option>
+  </select>
+   <br>
+  Nick: <input type="text" cols=20 name="nick">
+  <input type=button value="Suscription" onclick="sendEvt(00)">
+  </br>
+  Text: <input type="text" size="80" name="message">
+  <input type=button value="Send" onclick="sendEvt(01)">
+  <br>
+                       Messages
+  <input type="button" value="Clear msg" onClick="document.formul.text.value='';return false">
+  <br>
+  <textarea name=text cols=70 rows=10> </textarea>
+  <br>
+  <br>
+</form>
+</body>
+</html>
